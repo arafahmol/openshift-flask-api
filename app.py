@@ -32,7 +32,7 @@ def health():
     return jsonify({
         'status': 'ok',
         'database': db_status,
-        'version': '1.0.0'
+        'version': '2.0.0'
     })
 
 # ── Welcome ──────────────────────────────────────────
@@ -40,7 +40,7 @@ def health():
 def welcome():
     return jsonify({
         'message': 'Welcome to the Flask Product API!',
-        'version': '1.0.0',
+        'version': '2.0.0',
         'endpoints': {
             'GET  /products':       'get all products',
             'GET  /products/<id>':  'get one product',
