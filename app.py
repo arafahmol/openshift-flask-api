@@ -1,62 +1,55 @@
 import os
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
+from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from bson import ObjectId
 from datetime import datetime
 
 app = Flask(__name__)
 
-# Get MongoDB URL from environment variable (injected from OpenShift Secret)
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/flaskdb')
 
-# Connect to MongoDB
-client = MongoClient(MONGO_URL)
+# Add serverSelectionTimeoutMS=3000 — don't wait more than 3 seconds
+client = MongoClient(MONGO_URL, serverSelectionTimeoutMS=3000)
 db = client.get_database()
 products = db['products']
 
-# ── Helper ───────────────────────────────────────────
 def serialize(doc):
-    """Convert MongoDB document to JSON-serializable dict"""
-    doc['_id'] = str(doc['_id'])   # ObjectId is not JSON serializable by default
+    doc['_id'] = str(doc['_id'])
     return doc
 
-# ── Health check ─────────────────────────────────────
 @app.route('/health')
 def health():
     try:
         client.admin.command('ping')
         db_status = 'connected'
-    except ConnectionFailure:
+    except (ConnectionFailure, ServerSelectionTimeoutError):
         db_status = 'disconnected'
     return jsonify({
         'status': 'ok',
         'database': db_status,
-        'version': '2.0.0'
+        'version': '1.0.0'
     })
 
-# ── Welcome ──────────────────────────────────────────
 @app.route('/')
 def welcome():
     return jsonify({
         'message': 'Welcome to the Flask Product API!',
-        'version': '2.0.0',
+        'version': '1.0.0',
         'endpoints': {
-            'GET  /products':       'get all products',
-            'GET  /products/<id>':  'get one product',
-            'POST /products':       'create a product',
-            'PUT  /products/<id>':  'update a product',
-            'DELETE /products/<id>':'delete a product'
+            'GET  /products':        'get all products',
+            'GET  /products/<id>':   'get one product',
+            'POST /products':        'create a product',
+            'PUT  /products/<id>':   'update a product',
+            'DELETE /products/<id>': 'delete a product'
         }
     })
 
-# ── GET all products ──────────────────────────────────
 @app.route('/products', methods=['GET'])
 def get_products():
     all_products = [serialize(p) for p in products.find()]
     return jsonify({'total': len(all_products), 'products': all_products})
 
-# ── GET one product ───────────────────────────────────
 @app.route('/products/<id>', methods=['GET'])
 def get_product(id):
     try:
@@ -67,7 +60,6 @@ def get_product(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-# ── POST create product ───────────────────────────────
 @app.route('/products', methods=['POST'])
 def create_product():
     data = request.get_json()
@@ -84,7 +76,6 @@ def create_product():
     product['createdAt'] = product['createdAt'].isoformat()
     return jsonify(product), 201
 
-# ── PUT update product ────────────────────────────────
 @app.route('/products/<id>', methods=['PUT'])
 def update_product(id):
     try:
@@ -100,7 +91,6 @@ def update_product(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-# ── DELETE product ────────────────────────────────────
 @app.route('/products/<id>', methods=['DELETE'])
 def delete_product(id):
     try:
