@@ -28,14 +28,14 @@ def health():
     return jsonify({
         'status': 'ok',
         'database': db_status,
-        'version': '1.0.0'
+        'version': '1.1.0'
     })
 
 @app.route('/')
 def welcome():
     return jsonify({
         'message': 'Welcome to the Flask Product API!',
-        'version': '1.0.0',
+        'version': '1.1.0',
         'endpoints': {
             'GET  /products':        'get all products',
             'GET  /products/<id>':   'get one product',
@@ -104,3 +104,5 @@ def delete_product(id):
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port)
+
+this_is_a_bug
