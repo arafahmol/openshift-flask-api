@@ -6,6 +6,7 @@ from bson import ObjectId
 from datetime import datetime
 
 app = Flask(__name__)
+print('Running version 1.1.0 - this version has a bug')
 
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/flaskdb')
 
