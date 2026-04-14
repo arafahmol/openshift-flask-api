@@ -6,11 +6,8 @@ from bson import ObjectId
 from datetime import datetime
 
 app = Flask(__name__)
-print('Running version 1.1.0 - this version has a bug')
 
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/flaskdb')
-
-# Add serverSelectionTimeoutMS=3000 — don't wait more than 3 seconds
 client = MongoClient(MONGO_URL, serverSelectionTimeoutMS=3000)
 db = client.get_database()
 products = db['products']
@@ -26,25 +23,11 @@ def health():
         db_status = 'connected'
     except (ConnectionFailure, ServerSelectionTimeoutError):
         db_status = 'disconnected'
-    return jsonify({
-        'status': 'ok',
-        'database': db_status,
-        'version': '1.1.0'
-    })
+    return jsonify({'status': 'ok', 'database': db_status, 'version': '1.0.0'})
 
 @app.route('/')
 def welcome():
-    return jsonify({
-        'message': 'Welcome to the Flask Product API!',
-        'version': '1.1.0',
-        'endpoints': {
-            'GET  /products':        'get all products',
-            'GET  /products/<id>':   'get one product',
-            'POST /products':        'create a product',
-            'PUT  /products/<id>':   'update a product',
-            'DELETE /products/<id>': 'delete a product'
-        }
-    })
+    return jsonify({'message': 'Welcome to the Flask Product API!', 'version': '1.0.0'})
 
 @app.route('/products', methods=['GET'])
 def get_products():
@@ -105,4 +88,3 @@ def delete_product(id):
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port)
-this_is_a_syntax_bug((
